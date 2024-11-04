@@ -10,7 +10,7 @@ leds = [PWM(Pin(pin, Pin.OUT), freq=1000) for pin in led_pins]
 
 class RotaryEncoder:
     def __init__(self, rot_a, rot_b, rot_sw):
-        self.fifo = Fifo(30, typecode='i')
+        self.fifo = Fifo(100, typecode='i')
         self.a = Pin(rot_a, mode=Pin.IN, pull=Pin.PULL_UP)  # Clockwise
         self.b = Pin(rot_b, mode=Pin.IN, pull=Pin.PULL_UP)  # Counter-clockwise
         self.sw = Pin(rot_sw, mode=Pin.IN, pull=Pin.PULL_UP)  # Switch
@@ -40,9 +40,11 @@ class Menu:
         self.oled = oled
         self.items = items
         self.wifi_conn = False
-        self.font_width = 8  
+        self.font_width = 8
         self.selector_pos_y = 0
         self.spacing = line_spacing
+        self.wifi_fbuf = framebuf.FrameBuffer(bytearray(wifi), 15, 12, framebuf.MONO_HLSB)
+        self.no_wifi_fbuf = framebuf.FrameBuffer(bytearray(no_wifi), 17, 16, framebuf.MONO_HLSB)
 
     def select_next(self):
         if self.selector_pos_y < len(self.items) - 1:
@@ -65,9 +67,10 @@ class Menu:
             if item_index == self.selector_pos_y:
                 self.oled.rect(0, self.selector_pos_y * 15,
                                text_width, 12, 1)
-                
-        buffer = bytearray(no_wifi)
-        fbuf = framebuf.FrameBuffer(buffer, 17, 16, framebuf.MONO_HLSB)
-        self.oled.blit(fbuf, 110, 0)
+
+            if self.wifi_conn:
+                self.oled.blit(self.wifi_fbuf, 110, 0)
+            else:
+                self.oled.blit(self.no_wifi_fbuf, 110, 0)
 
         self.oled.show()

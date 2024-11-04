@@ -4,14 +4,10 @@ import uasyncio
 
 ssid = 'Galaxy'
 password = 'salasana1'
-timeout = 10  # Timeout in seconds
+timeout = 30  # Timeout in seconds
 
 
-async def wifi_connect():
-    # Clean up the WLAN interface first
-    wlan = network.WLAN(network.STA_IF)
-    wlan.deinit()
-
+async def wifi_connect(main_menu):
     # Connect to WLAN
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -20,16 +16,23 @@ async def wifi_connect():
 
     start_time = time()
     try:
-        while not wlan.isconnected():
+        while wlan.isconnected() == False:
             if time() - start_time > timeout:
-                wlan.deinit()  # Clean up
+                wlan.deinit()  # Clean up WLAN interface
                 print("Connection timed out.")
-                return
+                return False
             await uasyncio.sleep_ms(100)  
+            
     except KeyboardInterrupt:
         print("Connection aborted.")
         wlan.deinit()
-        return
+        return False
+    
+    except Exception as e:
+        print("Error: ", e)
+        wlan.deinit()
+        return False
 
     print(f"Connected to SSID: {ssid} IP: {wlan.ifconfig()[0]}")
-    return
+    main_menu.wifi_conn = True
+    return True

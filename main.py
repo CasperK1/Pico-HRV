@@ -19,7 +19,7 @@ rot = RotaryEncoder(10, 11, 12)
 main_menu = Menu(oled, ["MEASURE HR", "HRV ANALYSIS", "KUBIOS", "HISTORY"], 15)
 
 
-async def main():
+async def menu_loop():
     while True:
         if rot.fifo.has_data():
             data = rot.fifo.get()
@@ -30,21 +30,30 @@ async def main():
             elif data == 0:
                 main_menu.select_item()
                 
+                
         main_menu.display()
-        await uasyncio.sleep_ms(50)
+        await uasyncio.sleep_ms(20)
+
+# wifi_connect() has to be called in a separate task to avoid crashing, when the wifi icon changes
+async def wifi_connection(): 
+    is_wifi_connected = await wifi_connect(main_menu)
+    if is_wifi_connected:
+        main_menu.wifi_conn = True
+    else:
+        main_menu.wifi_conn = False
 
 
-async def run():
+async def main():
+    wifi_task = uasyncio.create_task(wifi_connect(main_menu))
+    main_task = uasyncio.create_task(menu_loop())
 
-    # Create tasks for both WiFi and main menu loop
-    wifi_task = uasyncio.create_task(wifi_connect())
-    main_task = uasyncio.create_task(main())
-
-    # Wait for both tasks
+    """ Wait for both tasks
+     uasyncio.gather: Runs multiple coroutines concurrently and waits for all of them to complete. Used within async functions to run multiple tasks in parallel
+     uasyncio.run: Used to run the main event loop. Can be called once in the program"""
     await uasyncio.gather(wifi_task, main_task)
 
 if __name__ == '__main__':
     try:
-        uasyncio.run(run())
+        uasyncio.run(main())
     except KeyboardInterrupt:
         print("Program interrupted")
