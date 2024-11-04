@@ -2,7 +2,8 @@ import time
 from machine import Pin, I2C, PWM
 from ssd1306 import SSD1306_I2C
 from lib.fifo import Fifo
-
+from bitmaps import  wifi, no_wifi
+import framebuf
 led_pins = [22, 21, 20]
 leds = [PWM(Pin(pin, Pin.OUT), freq=1000) for pin in led_pins]
 
@@ -38,6 +39,7 @@ class Menu:
     def __init__(self, oled, items, line_spacing):
         self.oled = oled
         self.items = items
+        self.wifi_conn = False
         self.font_width = 8  
         self.selector_pos_y = 0
         self.spacing = line_spacing
@@ -63,5 +65,9 @@ class Menu:
             if item_index == self.selector_pos_y:
                 self.oled.rect(0, self.selector_pos_y * 15,
                                text_width, 12, 1)
+                
+        buffer = bytearray(no_wifi)
+        fbuf = framebuf.FrameBuffer(buffer, 17, 16, framebuf.MONO_HLSB)
+        self.oled.blit(fbuf, 110, 0)
 
         self.oled.show()

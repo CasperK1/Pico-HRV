@@ -6,16 +6,7 @@ import framebuf
 i2c = I2C(1, scl=Pin(15), sda=Pin(14), freq=400000)
 display = SSD1306_I2C(128, 64, i2c)      # 128x64 display
 
-
-def display_bitmap(bitmap_data, width, height, x=0, y=0):
-    buffer = bytearray(bitmap_data)
-    fbuf = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HLSB)
-
-    display.fill(0)
-    display.blit(fbuf, x, y)
-    display.show()
-
-
+# 17x16
 no_wifi = bytearray([
     0x03, 0xe0, 0x00, 0x0f, 0x78, 0x00, 0x38, 0x0c, 0x00, 0x38, 0x06, 0x00, 0x6f, 0xf3, 0x00, 0x5e,
     0x19, 0x00, 0xd3, 0xe5, 0x00, 0xcd, 0xb1, 0x80, 0xc3, 0xc1, 0x00, 0xc2, 0x61, 0x00, 0x41, 0xb1,
@@ -28,4 +19,10 @@ wifi = bytearray([
     0x04, 0x40, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00
 ])
 
-display_bitmap(wifi, 15, 12, 60, 28)  
+
+def display_wifi_status(bitmap_data, width, height, x=0, y=0):
+    buffer = bytearray(bitmap_data)
+    fbuf = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HLSB)
+
+    display.blit(fbuf, x, y)
+
