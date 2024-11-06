@@ -45,10 +45,15 @@ class Menu:
         self.spacing = line_spacing
         self.wifi = framebuf.FrameBuffer(bytearray(wifi), 15, 12, framebuf.MONO_HLSB)
         self.no_wifi = framebuf.FrameBuffer(bytearray(no_wifi), 17, 16, framebuf.MONO_HLSB)
+        self.scroll = False
 
     def select_next(self):
-        if self.selector_pos_y < len(self.items) - 1:
+        if self.selector_pos_y < len(self.items)- 2:
             self.selector_pos_y += 1
+        else:
+            self.scroll = True
+
+                
 
     def select_previous(self):
         if self.selector_pos_y > 0:
@@ -72,5 +77,9 @@ class Menu:
                 self.oled.blit(self.wifi, 110, 0)
             else:
                 self.oled.blit(self.no_wifi, 110, 0)
-
+        if self.scroll:
+            self.oled.scroll(0, -15)
+            self.oled.fill_rect(0, 64 - self.spacing, 128, self.spacing, 0)
+            
         self.oled.show()
+        

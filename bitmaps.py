@@ -20,6 +20,7 @@ wifi = bytearray([
 ])
 
 
+
 def display_wifi_status(bitmap_data, width, height, x=0, y=0):
     buffer = bytearray(bitmap_data)
     fbuf = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HLSB)

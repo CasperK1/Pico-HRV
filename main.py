@@ -17,9 +17,8 @@ oled_width = 128
 oled_height = 64
 oled = SSD1306_I2C(oled_width, oled_height, i2c)
 rot = RotaryEncoder(10, 11, 12)
-main_menu = Menu(oled, ["MEASURE HR", "HRV ANALYSIS", "KUBIOS", "HISTORY"], 15)
+main_menu = Menu(oled, ["MEASURE HR", "HRV ANALYSIS", "KUBIOS", "HISTORY", "SETTINGS"], 15)
 history_menu = Menu(oled, ["Back"], 15)
-history_menu.items = ["Back"]
 
 
 current_menu = "MAIN"
@@ -56,7 +55,6 @@ async def history_menu_loop():
                     current_menu = "MAIN"
                     main_menu.display()
                     break
-
         history_menu.display()
         await uasyncio.sleep_ms(20)
 
