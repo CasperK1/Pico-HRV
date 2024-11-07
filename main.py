@@ -27,7 +27,7 @@ current_menu = "MAIN"
 async def main_menu_loop():
     global current_menu
     while True:
-        if rot.fifo.has_data():
+        while rot.fifo.has_data():
             data = rot.fifo.get()
             if data == 1:
                 main_menu.select_next()
@@ -47,7 +47,7 @@ async def main_menu_loop():
 async def history_menu_loop():
     global current_menu
     while current_menu == "HISTORY":
-        if rot.fifo.has_data():
+        while rot.fifo.has_data():
             data = rot.fifo.get()
             if data == 0:
                 menu_select = history_menu.select_item() 
