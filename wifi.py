@@ -48,7 +48,7 @@ async def wifi_connect_install_mqtt(wlan, main_menu, history_menu):
         wlan.connect(ssid, password)
         start_time = time()
         try:
-            while not wlan.isconnected():
+            while wlan.isconnected() == False:
                 if time() - start_time > timeout:
                     print("Connection attempt timed out.")
                     await uasyncio.sleep(5)  # Wait before next attempt
