@@ -112,7 +112,7 @@ async def menu_manager():
 
 
 async def main():
-    wifi_task = uasyncio.create_task(wifi_connect_install_mqtt(wlan, main_menu, history_menu))
+    wifi_task = uasyncio.create_task(wifi_connect_install_mqtt(wlan, main_menu, history_menu, settings_menu))
     menu_task = uasyncio.create_task(menu_manager())
 
     """ Wait for both tasks

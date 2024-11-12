@@ -3,6 +3,13 @@ from ssd1306 import SSD1306_I2C
 from lib.fifo import Fifo
 import framebuf
 
+from bitmaps import wifi, no_wifi
+from ssd1306 import SSD1306_I2C
+from lib.fifo import Fifo
+import framebuf
+import time
+
+
 class BaseMenu:
     def __init__(self, oled, items):
         self.oled = oled
@@ -14,6 +21,8 @@ class BaseMenu:
         self.spacing = 15
         self.scroll_offset = 0
         self.max_visible_items = 4
+        self.last_update = 0
+        self.min_update_interval = 20  
         # WiFi icons
         self.wifi = framebuf.FrameBuffer(
             bytearray(wifi), 15, 12, framebuf.MONO_HLSB)
@@ -35,15 +44,7 @@ class BaseMenu:
     def select_item(self):
         return self.items[self.selector_pos_y]
 
-    def _draw_wifi_status(self):
-        """Draw WiFi status icon"""
-        if self.wifi_conn:
-            self.oled.blit(self.wifi, 110, 0)
-        else:
-            self.oled.blit(self.no_wifi, 110, 0)
-
-    def _draw_scroll_indicators(self):
-        """Draw scroll indicators if needed"""
+    def draw_scroll_indicators(self):
         if self.scroll_offset > 0:
             self.oled.text("^", 120, 20, 1)
             self.oled.text("|", 120, 22, 1)
@@ -51,12 +52,30 @@ class BaseMenu:
             self.oled.text("|", 120, 52, 1)
             self.oled.text("v", 120, 56, 1)
 
+    def draw_wifi_status(self):
+        """Draw WiFi status icon"""
+        if self.wifi_conn:
+            self.oled.blit(self.wifi, 110, 0)
+        else:
+            self.oled.blit(self.no_wifi, 110, 0)
+
+    def safe_oled_show(self):
+        """Necessary method to prevent crash File "ssd1306.py", line 1, in write_data OSError: [Errno 110] ETIMEDOUT"""
+        current_time = time.ticks_ms()
+        if time.ticks_diff(current_time, self.last_update) < self.min_update_interval:
+            time.sleep_ms(10)
+            return
+
+        self.oled.show()
+        self.last_update = current_time
+
+
 
 class MainMenu(BaseMenu):
     def display(self):
         self.oled.fill(0)
-        self._draw_wifi_status()
-        self._draw_scroll_indicators()
+        self.draw_scroll_indicators()
+        self.draw_wifi_status()
 
         # Draw menu items
         for i in range(self.max_visible_items):
@@ -73,36 +92,31 @@ class MainMenu(BaseMenu):
             if item_index == self.selector_pos_y:
                 self.oled.rect(0, item_position_y, text_width, 12, 1)
 
-        self.oled.show()
+
+        self.safe_oled_show()
 
 
 class HistoryMenu(BaseMenu):
     def __init__(self, oled, items):
         super().__init__(oled, items)
-        self.max_visible_items = 3  # Reduced for header space
+        self.max_visible_items = 3
         self.header_height = 15
 
     def display(self):
         self.oled.fill(0)
-
-        # Draw header
         self.oled.fill_rect(0, 0, 56, 10, 1)
         self.oled.text("HISTORY", 0, 1, 0)
+        self.draw_scroll_indicators()
+        self.draw_wifi_status()
 
-        self._draw_wifi_status()
-        self._draw_scroll_indicators()
-
-        # Handle empty history
         if len(self.items) <= 1:
             back_button = self.items[0]
             back_button_pos_y = 50
             text_width = len(back_button) * self.font_width + 8
-
             self.oled.text("Nothing here...", 0, 25, 1)
             self.oled.text(f'{back_button}', 4, back_button_pos_y + 3, 1)
             self.oled.rect(0, back_button_pos_y, text_width, 12, 1)
         else:
-            # Draw menu items
             for i in range(self.max_visible_items):
                 item_index = self.scroll_offset + i
                 if item_index >= len(self.items):
@@ -117,26 +131,22 @@ class HistoryMenu(BaseMenu):
                 if item_index == self.selector_pos_y:
                     self.oled.rect(0, item_position_y, text_width, 12, 1)
 
-        self.oled.show()
+        self.safe_oled_show()
 
 
 class SettingsMenu(BaseMenu):
     def __init__(self, oled, items):
         super().__init__(oled, items)
-        self.max_visible_items = 3  # Reduced for header space
+        self.max_visible_items = 3
         self.header_height = 15
 
     def display(self):
         self.oled.fill(0)
-
-        # Draw header
         self.oled.fill_rect(0, 0, 64, 10, 1)
         self.oled.text("SETTINGS", 0, 1, 0)
+        self.draw_scroll_indicators()
+        self.draw_wifi_status()
 
-        self._draw_wifi_status()
-        self._draw_scroll_indicators()
-
-        # Draw menu items
         for i in range(self.max_visible_items):
             item_index = self.scroll_offset + i
             if item_index >= len(self.items):
@@ -151,4 +161,4 @@ class SettingsMenu(BaseMenu):
             if item_index == self.selector_pos_y:
                 self.oled.rect(0, item_position_y, text_width, 12, 1)
 
-        self.oled.show()
+        self.safe_oled_show()

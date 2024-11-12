@@ -1,11 +1,9 @@
 from filefifo import Filefifo
 
-data = Filefifo(10, name='capture_250Hz_01.txt')
+data = Filefifo(10, name='exercises/capture_250Hz_01.txt')
 
-# Get first samples
 prev = data.get()
 curr = data.get()
-
 peaks = []
 sample_count = 0
 
@@ -13,20 +11,23 @@ sample_count = 0
 while len(peaks) < 4:
     next_val = data.get()
     sample_count += 1
-    
-    # using >= when there is identical peak value at multiple lines
-    if curr >= prev and curr > next_val:
+
+    # Calculate slopes
+    curr_slope = curr - prev
+    next_slope = next_val - curr
+
+    # Peak is where slope changes from positive to negative
+    if curr_slope > 0 and next_slope <= 0:
         peaks.append(sample_count)
-        
+
     prev = curr
     curr = next_val
-    
-    
-print(f"First 4 peaks at lines {peaks}\n")
 
+print(f"First 4 peaks at lines {peaks}\n")
 # Calculate intervals
-for i in range(len(peaks) - 1): 
-    interval = peaks[i+1] - peaks[i]  # Get difference between consecutive peaks
+for i in range(len(peaks) - 1):
+    # Get difference between consecutive peaks
+    interval = peaks[i+1] - peaks[i]
     seconds = interval / 250
     freq = 1 / seconds
     print(f"Interval {i+1}: {interval} samples = {seconds:.4f}s")

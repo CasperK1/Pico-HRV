@@ -17,7 +17,7 @@ def is_mqtt_installed():
         return False
 
 
-async def wifi_connect_install_mqtt(wlan, main_menu, history_menu):
+async def wifi_connect_install_mqtt(wlan, main_menu, history_menu, settings_menu):
     mqtt_installed = is_mqtt_installed()
 
     while True:
@@ -25,6 +25,7 @@ async def wifi_connect_install_mqtt(wlan, main_menu, history_menu):
             print(f"Connected to SSID: {ssid} Pico IP: {wlan.ifconfig()[0]} Checking connection status every 15 sec.")
             main_menu.wifi_conn = True
             history_menu.wifi_conn = True
+            settings_menu.wifi_conn = True
 
             # Install MQTT
             if mqtt_installed == False:
