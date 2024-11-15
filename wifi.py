@@ -6,23 +6,22 @@ import uasyncio
 
 ssid = 'Galaxy'
 password = 'salasana1'
-timeout = 30  # Timeout in seconds
+timeout = 15  # Timeout in seconds
 
-# Check if MQTT is installed, so installation is not attempted every time
 def is_mqtt_installed():
     try:
-        os.stat('lib/umqtt/simple.mpy')  
+        os.stat('lib/umqtt/simple.mpy')
         return True
     except OSError:
         return False
 
-
 async def wifi_connect_install_mqtt(wlan, main_menu, history_menu, settings_menu):
+    # Check if MQTT is installed, so installation is not attempted every time
     mqtt_installed = is_mqtt_installed()
 
     while True:
         if wlan.isconnected():
-            print(f"Connected to SSID: {ssid} Pico IP: {wlan.ifconfig()[0]} Checking connection status every 15 sec.")
+            print(f"Checking connection status every 10 sec.")
             main_menu.wifi_conn = True
             history_menu.wifi_conn = True
             settings_menu.wifi_conn = True
@@ -36,7 +35,7 @@ async def wifi_connect_install_mqtt(wlan, main_menu, history_menu, settings_menu
                 except Exception as e:
                     print(f"Could not install MQTT: {e}")
 
-            await uasyncio.sleep(15)  
+            await uasyncio.sleep(10)
             continue
 
         # Not connected, try to connect
@@ -46,23 +45,23 @@ async def wifi_connect_install_mqtt(wlan, main_menu, history_menu, settings_menu
 
         # Connect to WLAN
         wlan.active(True)
+        await uasyncio.sleep_ms(100)
         wlan.connect(ssid, password)
         start_time = time()
         try:
             while wlan.isconnected() == False:
                 if time() - start_time > timeout:
                     print("Connection attempt timed out.")
-                    await uasyncio.sleep(5)  # Wait before next attempt
                     break
                 await uasyncio.sleep_ms(100)
 
         except Exception as e:
-            print("Connection error: ", e)            
+            print("Connection error: ", e)
             await uasyncio.sleep(5)  # Wait before next attempt
             continue
 
         if wlan.isconnected():
-            print(f"Connected to SSID: {ssid} Pico IP: {wlan.ifconfig()[0]} Checking connection status every 15 sec.")
+            print(f"Connected to SSID: {ssid} Pico IP: {wlan.ifconfig()[0]}")
             main_menu.wifi_conn = True
             history_menu.wifi_conn = True
 

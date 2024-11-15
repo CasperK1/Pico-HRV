@@ -3,7 +3,7 @@ import network
 from wifi import wifi_connect_install_mqtt
 from machine import Pin, I2C
 from ssd1306 import SSD1306_I2C
-from modules import RotaryEncoder, load_capture_files
+from utils import RotaryEncoder, load_capture_files, SSD1306Wrapper
 from menus import MainMenu, HistoryMenu, SettingsMenu
 import micropython
 
@@ -15,99 +15,27 @@ wlan = network.WLAN(network.STA_IF)
 i2c = I2C(1, scl=Pin(15), sda=Pin(14), freq=400000)
 oled_width = 128
 oled_height = 64
-oled = SSD1306_I2C(oled_width, oled_height, i2c)
+oled = SSD1306Wrapper(SSD1306_I2C(oled_width, oled_height, i2c))
 rot = RotaryEncoder(10, 11, 12)
 
-main_menu = MainMenu(oled, ["MEASURE HR", "HRV ANALYSIS", "KUBIOS", "HISTORY", "SETTINGS"])
-history_items = load_capture_files() + ["Back"]
-history_menu = HistoryMenu(oled, history_items)
-settings_menu = SettingsMenu(oled, ["WiFi", "Logs", "Back"])
+# Menu instances
+main_menu = MainMenu(oled, ["MEASURE HR", "HRV ANALYSIS", "KUBIOS", "HISTORY", "SETTINGS"], rot)
+history_items = load_capture_files() or []
+history_items.append("Back")
+history_menu = HistoryMenu(oled, history_items, rot)
+settings_menu = SettingsMenu(oled, ["WiFi", "MQTT", "Back"], rot,  wlan)
 
-
-current_menu = "MAIN"
-
-
-def get_last_input(fifo):
-    """Get only the most recent input, clearing any old ones. Prevents fifo's buffer overflowing and makes the menu more responsive"""
-    last_input = None
-    while fifo.has_data():
-        last_input = fifo.get()
-    return last_input
-
-
-async def main_menu_loop():
-    global current_menu
-    while current_menu == "MAIN":
-        if rot.fifo.has_data():
-            data = get_last_input(rot.fifo)
-            if data == 1:
-                main_menu.select_next()
-            elif data == -1:
-                main_menu.select_previous()
-            elif data == 0:
-                selected_item = main_menu.select_item()
-                if selected_item == "HISTORY":
-                    current_menu = "HISTORY"
-                    history_menu.display()
-                    break
-                elif selected_item == "SETTINGS":
-                    current_menu = "SETTINGS"
-                    settings_menu.display()
-                    break
-
-        main_menu.display()
-        await uasyncio.sleep_ms(20)
-
-
-async def history_menu_loop():
-    global current_menu
-    while current_menu == "HISTORY":
-        if rot.fifo.has_data():
-            data = get_last_input(rot.fifo)
-            if data == 1:
-                history_menu.select_next()
-            elif data == -1:
-                history_menu.select_previous()
-            elif data == 0:
-                menu_select = history_menu.select_item()
-                if menu_select == "Back":
-                    current_menu = "MAIN"
-                    main_menu.display()
-                    break
-
-        history_menu.display()
-        await uasyncio.sleep_ms(20)
-
-
-async def settings_menu_loop():
-    global current_menu
-    while current_menu == "SETTINGS":
-        if rot.fifo.has_data():
-            data = get_last_input(rot.fifo)
-            if data == 1:
-                settings_menu.select_next()
-            elif data == -1:
-                settings_menu.select_previous()
-            elif data == 0:
-                menu_select = settings_menu.select_item()
-                if menu_select == "Back":
-                    current_menu = "MAIN"
-                    main_menu.display()
-                    break
-
-        settings_menu.display()
-        await uasyncio.sleep_ms(20)
 
 
 async def menu_manager():
-    global current_menu
+    current_menu = "MAIN"
     while True:
         if current_menu == "MAIN":
-            await main_menu_loop()
+            current_menu = await main_menu.handle_input()
         elif current_menu == "HISTORY":
-            await history_menu_loop()
+            current_menu = await history_menu.handle_input()
         elif current_menu == "SETTINGS":
-            await settings_menu_loop()
+            current_menu = await settings_menu.handle_input()
 
 
 

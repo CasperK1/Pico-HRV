@@ -24,6 +24,7 @@ class Fifo:
         self.size = size
         self.dc = 0
         
+
     def put(self, value):
         """Put one item into the fifo. Raises an exception if the fifo is full."""
         nh = (self.head + 1) % self.size
@@ -32,7 +33,7 @@ class Fifo:
             self.head = nh
         else:
             self.dc = self.dc + 1
-            raise RuntimeWarning("Fifo is full - value dropped")
+            raise RuntimeError("Fifo is full - value dropped")
             
     def get(self):
         """Get one item from the fifo. If the fifo is empty raises an exception and returns the last value."""
