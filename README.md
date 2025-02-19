@@ -1,3 +1,6 @@
+## Heartbeat sensor and HRV analysis
+First year project. Developed on Rasperry Pi Pico W with Crowtail Pulse Sensor 2.0 and SSD1306 oled screen
+
 # To setup your Pico
 
 You need to have git installed. Make sure that you have python installed and that is in the path. You can verify this in terminal
