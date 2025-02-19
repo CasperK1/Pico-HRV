@@ -1,0 +1,22 @@
+{
+  "urls": [
+    ["lib/filefifo.py", "http://localhost:8000/pico-lib/filefifo.py"],
+    ["lib/fifo.py", "http://localhost:8000/pico-lib/fifo.py"],
+    ["lib/piotimer.py", "http://localhost:8000/pico-lib/piotimer.py"],
+    ["lib/led.py", "http://localhost:8000/pico-lib/led.py"],
+    ["lib/ssd1306.mpy", "http://localhost:8000/pico-lib/ssd1306.mpy"],
+    ["lib/umqtt/simple.mpy", "http://localhost:8000/pico-lib/umqtt/simple.mpy"],
+    ["main.py", "http://localhost:8000/main.py"],
+    ["config.json", "http://localhost:8000/config.json"],
+    ["src/components/HR.py", "http://localhost:8000/src/components/HR.py"],
+    ["src/components/HRV.py", "http://localhost:8000/src/components/HRV.py"],
+    ["src/components/hr_display.py", "http://localhost:8000/src/components/hr_display.py"],
+    ["src/components/save_measurements.py", "http://localhost:8000/src/components/save_measurements.py"],
+    ["src/utils.py", "http://localhost:8000/src/utils.py"],
+    ["src/wifi.py", "http://localhost:8000/src/wifi.py"],
+    ["src/bitmaps.py", "http://localhost:8000/src/bitmaps.py"],
+    ["src/menus.py", "http://localhost:8000/src/menus.py"]
+  ],
+  "deps": [],
+  "version": "0.1"
+}
